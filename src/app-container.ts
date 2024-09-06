@@ -1,42 +1,40 @@
 
-import { LitElement, css, html, nothing, unsafeCSS } from 'lit';
 import { provide } from '@lit/context';
-import { AppContext, AppContextMixin } from './utils/context.js';
-import { customElement, query, property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { setAnimation } from '@shoelace-style/shoelace/dist/utilities/animation-registry.js';
-import { AppRouter } from './components/router';
-import * as protocols from './utils/protocols';
+import { LitElement, css, html, nothing } from 'lit';
+import { customElement, query } from 'lit/decorators.js';
+import { AppRouter } from './components/router.js';
+import { AppContext, AppContextMixin } from './utils/context.js';
 
-import { activatePolyfills } from '@web5/api';
+import { activatePolyfills, Web5 } from '@web5/api';
 
-import './styles/global.css';
 import './components/global.js';
-import './styles/theme.js';
-import { DOM, notify, natives } from './utils/helpers.js';
+import './styles/global.css';
 import PageStyles from './styles/page.css' assert { type: 'css' };
+import './styles/theme.js';
+import { DOM } from './utils/helpers.js';
 
 import { SpinnerMixin, SpinnerStyles } from './utils/spinner.js';
 
 import '@vaadin/app-layout/theme/lumo/vaadin-app-layout.js';
 import '@vaadin/app-layout/theme/lumo/vaadin-drawer-toggle.js';
 
-import './pages/home';
 import './pages/directory.js';
+import './pages/home.js';
 import './pages/profile.js';
-import './pages/story.js';
 import './pages/stories.js';
+import './pages/story.js';
 
 activatePolyfills();
 
 const rootElement = document.documentElement;
 const rootStyles = rootElement.style;
 let lastScrollPosition = 0;
-function setScrollFactor(){
+function setScrollFactor() {
   const scrollPosition = window.scrollY;
   rootElement.setAttribute('scroll-direction', !scrollPosition || scrollPosition > lastScrollPosition ? 'down' : 'up');
-  rootStyles.setProperty('--scroll-position', scrollPosition);
-  rootStyles.setProperty('--scroll-height', rootElement.scrollHeight);
+  rootStyles.setProperty('--scroll-position', scrollPosition.toString());
+  rootStyles.setProperty('--scroll-height', rootElement.scrollHeight.toString());
   lastScrollPosition = scrollPosition;
 }
 
@@ -44,7 +42,7 @@ window.addEventListener('scroll', () => requestAnimationFrame(setScrollFactor));
 
 document.addEventListener('profile-card-popup', e => {
   const anchor = e.detail.anchor;
-  const popup = document.querySelector('#app_container ').profileCardPopup
+  const popup = document.querySelector('#app_container').profileCardPopup
   const card = popup.querySelector('profile-card');
 
   anchor.addEventListener('pointerleave', e => {
@@ -469,7 +467,7 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
       onRouteChange: async (route, path) => {
         //console.log(route, path);
         if (this.initialized) {
-          
+
         }
         this?.appLayout?.__closeOverlayDrawer()
       },
@@ -506,7 +504,7 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
 
   #initialization: Promise<void> | null = null;
 
-  async #initialize(){
+  async #initialize() {
     return this.#initialization = this.#initialization || new Promise(async resolve => {
       this.startSpinner(null, { minimum: 0, renderImmediate: true });
       if (localStorage.connected) {
@@ -522,7 +520,7 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
     });
   }
 
-  get initialize(){
+  get initialize() {
     return this.#initialization || this.#initialize();
   }
 
@@ -532,30 +530,30 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
     const fadeOut = { transform: 'scale(1.05)', opacity: '0' };
     this.renderRoot.querySelectorAll('.modal-page').forEach(modal => {
       setAnimation(modal, 'dialog.show', {
-        keyframes: [fadeOut,fadeIn],
+        keyframes: [fadeOut, fadeIn],
         options: fadeOptions
       });
       setAnimation(modal, 'dialog.hide', {
-        keyframes: [fadeIn,fadeOut],
+        keyframes: [fadeIn, fadeOut],
         options: fadeOptions
       });
     });
   }
 
-  async remoteConnect(){
-    // const response = await Web5.connect({
-    //   remoteDevice: {
-    //     onQrGenerated(str){
-    //       // handle it
-    //     },
-    //     async onPinCapture(){
-    //       return 123456;
-    //     }
-    //   }
-    // })
+  async remoteConnect() {
+    const response = await Web5.connect({
+      remoteDevice: {
+        onQrGenerated(str) {
+          // handle it
+        },
+        async onPinCapture() {
+          return 123456;
+        }
+      }
+    })
   }
 
-  async viewMembers(context, path){
+  async viewMembers(context, path) {
     const list = this.viewMembersModal.querySelector('member-list');
     list.context = context;
     list.path = path;
@@ -563,7 +561,7 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
   }
 
   render() {
-   //const inviteCount = this.context.invites.reduce((count, invite) => count + (invite.initialWrite ? 0 : 1), 0);
+    //const inviteCount = this.context.invites.reduce((count, invite) => count + (invite.initialWrite ? 0 : 1), 0);
     return html`
 
       <header id="app_header" flex="center-y">
@@ -574,22 +572,21 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
 
         <h1 class="text-logo">Fllw</h1>
 
-        <sl-icon-button id="notification_button" class="shadow-icon" variant="text" name="bell-fill" slot="navbar" data-count="${globalThis.inviteCount || nothing}" @click="${ e => this.viewUserProfile(null, 'notifications') }"></sl-icon-button>
+        <sl-icon-button id="notification_button" class="shadow-icon" variant="text" name="bell-fill" slot="navbar" data-count="${globalThis.inviteCount || nothing}" @click="${e => this.viewUserProfile(null, 'notifications')}"></sl-icon-button>
 
-        ${
-          this.context.connected ?
-            html`
+        ${this.context.connected ?
+        html`
               <a href="/profiles/${this.context.did}">
                 <sl-avatar id="user_avatar" image="${this.context?.avatar?.cache?.uri}" label="User avatar"></sl-avatar>
               </a>
             ` :
-            html`
-              <sl-button size="small" @click="${ e => this.connectModal.show() }">
+        html`
+              <sl-button size="small" @click="${e => this.connectModal.show()}">
                 <sl-icon slot="prefix" name="box-arrow-in-right"></sl-icon>
                 Connect
               </sl-button>
             `
-        }
+      }
 
       </header>
 
@@ -603,19 +600,19 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
           <div>Lookup</div>
         </a>
         ${this.context.connected ?
-          html`
+        html`
             <a href="/profiles/${this.context.did}" ?active="${location.pathname.match(`/profiles/${this.context.did}`)}">
               <sl-avatar image="${this.context?.avatar?.cache?.uri}" label="User avatar"></sl-avatar>
               <div>Profile</div>
             </a>
           ` :
-          html`
-            <a @click="${ e => this.connectModal.show() }">
+        html`
+            <a @click="${e => this.connectModal.show()}">
               <sl-icon slot="prefix" name="person"></sl-icon>
               <div>Profile</div>
             </a>
           `
-        }
+      }
       </nav>
 
       <main>
@@ -628,18 +625,18 @@ export class AppContainer extends AppContextMixin(SpinnerMixin(LitElement)) {
 
       <sl-dialog id="connect_modal" label="Connect" placement="start">
         <section flex="column center-x center-y">
-          <sl-button variant="default" size="large" @click="${ async e => {
-            e.target.loading = true;
-            const did = await this.loadProfile();
-            e.target.loading = false;
-            router.navigateTo(`/profiles/${did}`);
-            this.connectModal.hide();
-          }}">
+          <sl-button variant="default" size="large" @click="${async e => {
+        e.target.loading = true;
+        const did = await this.loadProfile(e.target.value);
+        e.target.loading = false;
+        this.router.navigateTo(`/profiles/${did}`);
+        this.connectModal.hide();
+      }}">
             <sl-icon slot="prefix" name="person-plus"></sl-icon>
             Create a new identity
           </sl-button>
           <div break-text="OR"></div>
-          <sl-button variant="default" size="large" @click="${ e => this.remoteConnect() }">
+          <sl-button variant="default" size="large" @click="${e => this.remoteConnect()}">
             <sl-icon slot="prefix" name="person-up"></sl-icon>
             Connect your identity
           </sl-button>

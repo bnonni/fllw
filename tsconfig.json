@@ -23,13 +23,30 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": false,
     "outDir": "./types",
-    "lib": ["es2017", "esnext", "dom", "dom.iterable", "WebWorker"],
+    "lib": [
+      "es2017",
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "WebWorker"
+    ],
     "types": [
       "vite/client",
       "vite-plugin-pwa/client",
       "vite-plugin-import-css-sheet/client"
     ]
   },
-  "include": ["src/**/*.ts", "src/pages/home.js", "src/utils/context.js", "src/utils/helpers.js", "public/sw.ts", "src/utils/web-features.ts", "src/utils/follows.js"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/pages/home.js",
+    "src/utils/context.js",
+    "src/utils/helpers.js",
+    "public/sw.ts",
+    "src/utils/web-features.ts",
+    "src/utils/follows.js",
+    "src/app-container.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

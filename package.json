@@ -71,6 +71,6 @@
     "bracketSpacing": true
   },
   "engines": {
-    "node": "18.15.0"
+    "node": ">=18.15.0"
   }
 }
